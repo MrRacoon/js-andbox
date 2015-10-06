@@ -30,50 +30,49 @@ Shapes
     randomWithin = (max) -> Math.random() * max
 
     class Circle
-        constructor: (@cx, @cy, @r) ->
+        constructor: (@cx = center.x, @cy = center.y, @r = padding) ->
 
-    getRadius = _.prop 'r'
-    getX      = _.prop 'cx'
-    getY      = _.prop 'cy'
+    getRadius = R.prop 'r'
+    getX      = R.prop 'cx'
+    getY      = R.prop 'cy'
 
     newCircle = (x, y, z) -> new Circle x, y, z
 
-    makeRandomCircle = R.apply newCircle,
-                       R.map randomWithin [width, height, padding]
-
-
+    makeRandomCircle = R.apply newCircle, (R.map randomWithin, [width, height, padding])
 
 Scales
 ------
 
     xScale = d3.scale.linear()
         .domain [0, width]
-        .range  [padding, width - (padding*2)]
+        .range  [padding, width + padding]
 
     yScale = d3.scale.linear()
         .domain [0, height]
-        .range  [padding, height - (padding*2)]
-
-    yScaleCirc    = R.compose yScale, R.prop 'cy'
-    xScaleCirc    = R.compose xScale, R.prop 'cx'
+        .range  [padding, height + padding]
 
     padScale = d3.scale.linear()
         .domain [0, padding]
 
-    fillScale     = padScale.range ['white','black']
-    topFillScale  = padScale.range ['white','black']
-    botFillScale  = padScale.range ['black','white']
+    fillScale        = padScale.range ['white','black']
+    topFillScale     = padScale.range ['white','black']
+    botFillScale     = padScale.range ['black','white']
 
+    yScaleCirc       = R.compose yScale, getY
+    xScaleCirc       = R.compose xScale, getX
 
     fillScaleCirc    = R.compose fillScale,    getRadius
     topFillScaleCirc = R.compose topFillScale, getRadius
     botFillScaleCirc = R.compose botFillScale, getRadius
 
+Data Generation
+---------------
 
-    makeData = (count) ->
-        count = if R.isNil count then Math.round (Math.random() * 30)  else count
-        make  = R.compose (R.sortBy getRadius), (R.map makeCirc), (R.range 0)
-        make count
+    makeData = (count = Math.round (Math.random() * 30)) ->
+        (R.sortBy getRadius, (R.map makeRandomCircle, (R.range 0, count)))
+
+Binding
+-------
 
     circs = target.selectAll 'circle'
         .data []
@@ -82,6 +81,8 @@ Scales
         .selectAll 'radialGradient'
         .data []
 
+Procedure
+---------
 
     go = () ->
 
@@ -155,6 +156,7 @@ Scales
         setTimeout go, 2000
 
 
+Perform
+-------
+
     go()
-
-

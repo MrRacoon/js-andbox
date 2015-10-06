@@ -55,7 +55,7 @@ gulp.task 'bower', () ->
     gulp.src bower()
         # Javascript
         .pipe jsFilter
-        .pipe minify()
+        #.pipe minify()
         .pipe concat    'deps.js'
         .pipe gulp.dest dest.js
         .pipe jsFilter.restore
