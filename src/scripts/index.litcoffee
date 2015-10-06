@@ -32,13 +32,15 @@ Shapes
     class Circle
         constructor: (@cx = center.x, @cy = center.y, @r = padding) ->
 
-    getRadius = R.prop 'r'
-    getX      = R.prop 'cx'
-    getY      = R.prop 'cy'
+    getR = R.prop 'r'
+    getX = R.prop 'cx'
+    getY = R.prop 'cy'
 
-    newCircle = (x, y, z) -> new Circle x, y, z
-
-    makeRandomCircle = R.apply newCircle, (R.map randomWithin, [width, height, padding])
+    makeRandomCircle = ->
+        x = randomWithin width
+        y = randomWithin height
+        r = randomWithin padding
+        new Circle x, y, r
 
 Scales
 ------
@@ -58,18 +60,22 @@ Scales
     topFillScale     = padScale.range ['white','black']
     botFillScale     = padScale.range ['black','white']
 
-    yScaleCirc       = R.compose yScale, getY
-    xScaleCirc       = R.compose xScale, getX
-
-    fillScaleCirc    = R.compose fillScale,    getRadius
-    topFillScaleCirc = R.compose topFillScale, getRadius
-    botFillScaleCirc = R.compose botFillScale, getRadius
+    xScaleCirc       = R.compose xScale,       getX
+    yScaleCirc       = R.compose yScale,       getY
+    fillScaleCirc    = R.compose fillScale,    getR
+    topFillScaleCirc = R.compose topFillScale, getR
+    botFillScaleCirc = R.compose botFillScale, getR
 
 Data Generation
 ---------------
 
     makeData = (count = Math.round (Math.random() * 30)) ->
-        (R.sortBy getRadius, (R.map makeRandomCircle, (R.range 0, count)))
+        console.log "Hell0! #{count}"
+        f = R.compose (R.sortBy getR), (R.map makeRandomCircle), (R.range 0)
+        a = f count
+        console.log "Hell0! #{a}"
+        a
+
 
 Binding
 -------
@@ -109,7 +115,7 @@ Procedure
             .attr
                 'cy'   : yScaleCirc
                 'cx'   : xScaleCirc
-                'r'    : getRadius
+                'r'    : getR
                 'fill' : (d, i) -> "url(#grad#{i})"
 
         circs.exit()
