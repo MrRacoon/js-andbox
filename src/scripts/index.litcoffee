@@ -23,6 +23,26 @@ Create the container for the gradient declarations
 
     defs = target.append 'defs'
 
+
+Shapes
+------
+
+    randomWithin = (max) -> Math.random() * max
+
+    class Circle
+        constructor: (@cx, @cy, @r) ->
+
+    getRadius = _.prop 'r'
+    getX      = _.prop 'cx'
+    getY      = _.prop 'cy'
+
+    newCircle = (x, y, z) -> new Circle x, y, z
+
+    makeRandomCircle = R.apply newCircle,
+                       R.map randomWithin [width, height, padding]
+
+
+
 Scales
 ------
 
@@ -44,16 +64,11 @@ Scales
     topFillScale  = padScale.range ['white','black']
     botFillScale  = padScale.range ['black','white']
 
-    getRadius = R.prop 'r'
 
     fillScaleCirc    = R.compose fillScale,    getRadius
     topFillScaleCirc = R.compose topFillScale, getRadius
     botFillScaleCirc = R.compose botFillScale, getRadius
 
-    makeCirc = ->
-        cx: Math.random() * width,
-        cy: Math.random() * height,
-        r:  Math.random() * padding
 
     makeData = (count) ->
         count = if R.isNil count then Math.round (Math.random() * 30)  else count
