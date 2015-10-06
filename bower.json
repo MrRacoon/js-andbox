@@ -1,0 +1,20 @@
+{
+  "name": "js-andbox",
+  "version": "0.0.0",
+  "private": "true",
+  "authors": [
+    "Erik Sutherland <erik.misu@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.6",
+    "ramda": "~0.17.1"
+  }
+}

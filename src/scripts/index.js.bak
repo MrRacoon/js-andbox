@@ -1,0 +1,139 @@
+
+var _ = R;
+
+
+var height  = 500;
+var width   = 1200;
+var padding = 50;
+
+var center = {
+    x: width / 2 + padding,
+    y: height / 2 + padding
+};
+
+var target = d3.select('#target').append('svg')
+    .attr({
+        width:  width + padding*2,
+        height: height + padding*2
+    });
+
+var defs = target.append("defs");
+
+var xScale = d3.scale.linear()
+    .domain([0, width])
+    .range([padding, width - (padding*2)]);
+
+var yScale = d3.scale.linear()
+    .domain([0, height])
+    .range([padding, height - (padding*2)]);
+
+var yScaleCirc    = _.compose(yScale, _.prop('cy'));
+var xScaleCirc    = _.compose(xScale, _.prop('cx'));
+
+var padScale = d3.scale.linear().domain([0, padding])
+
+var fillScale     = padScale.range(['white','black']);
+var topFillScale  = padScale.range(['white','black']);
+var botFillScale  = padScale.range(['black','white']);
+
+var fillScaleCirc    = _.compose(fillScale,    _.prop('r'));
+var topFillScaleCirc = _.compose(topFillScale, _.prop('r'));
+var botFillScaleCirc = _.compose(botFillScale, _.prop('r'));
+
+
+var getRadius = _.prop('r');
+
+
+var circs = target.selectAll('circle').data([]);
+var grads = target.append("defs").selectAll('radialGradient').data([]);
+
+
+function go () {
+
+    var del = function (d) { return d.r * 100};
+    var dur = function (d) { return d.r * 200 + 1000};
+
+    var d = _.isEmpty(circs.data()) ? makeData(30) : makeData(0);
+    console.log(d);
+
+    circs = circs.data(d);
+    grads = grads.data(d);
+
+    circs.enter()
+        .append('circle')
+        .attr("cy", center.y)
+        .attr("cx", center.x)
+        .attr("r", 0)
+        .attr('id', function (d,i) {
+            return i;
+        });
+
+    circs.transition()
+        //.duration(2000)//function (d) { return d.r * 100})
+        .duration(dur)
+        .delay(del)
+        //.delay(function (d) { return d.r * 100})
+        .ease("elastic")
+
+        .attr("cy", yScaleCirc)
+        .attr("cx", xScaleCirc)
+
+        .attr("r", getRadius)
+        .attr("fill", function (d, i) { return "url(#grad" + i +")" });
+
+    circs.exit().transition()
+        .duration(dur)//function (d) { return d.r * 100})
+        .delay(del)
+        .ease("cubic")
+        .attr("cy", center.y)
+        .attr("cx", center.x)
+        .attr("r", 0)
+        .remove();
+
+    grads.enter()
+        .append("radialGradient")
+        .attr("gradientUnits", "objectBoundingBox")
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .attr("r", "100%")
+        .attr("id", function (d, i) { return "grad" + i; });
+
+    grads.append("stop")
+        .transition()
+        .duration(dur)//function (d) { return d.r * 100})
+        .delay(del)
+        .ease("elastic")
+        .attr('class', 'x')
+        .attr("offset", "0%")
+        .style("stop-color", topFillScaleCirc);
+
+    grads.append("stop")
+        .transition()
+        .duration(dur)//function (d) { return d.r * 100})
+        .delay(del)
+        .attr('class', 'y')
+        .attr("offset", "100%")
+        .style("stop-color", botFillScaleCirc);
+
+    setTimeout(go, 2000);
+
+} go();
+
+
+function makeCirc() {
+    return {
+        cx: Math.random() * width,
+        cy: Math.random() * height,
+        r:  Math.random() * padding
+    };
+}
+
+function makeData (count) {
+    count = _.isNil(count) ? Math.round(Math.random() * 30) : count;
+    var circles = _.compose(
+        _.sortBy(getRadius),
+        _.map(makeCirc),
+        _.range(0)
+    );
+    return circles(count);
+}
