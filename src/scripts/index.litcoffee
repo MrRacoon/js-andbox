@@ -27,20 +27,35 @@ Create the container for the gradient declarations
 Shapes
 ------
 
+Given a number, find a random value between that number and zero
+
     randomWithin = (max) -> Math.random() * max
+
+Implement the general circle class. This thing is bare. Fill it with whatever
+you want
 
     class Circle
         constructor: (@cx = center.x, @cy = center.y, @r = padding) ->
 
+Implement the random circle class. All value will be randomized using internal
+bounds
+
+    class RandomCircle extends Circle
+        constructor: ->
+            x = randomWithin width
+            y = randomWithin height
+            r = randomWithin padding
+            super x, y, r
+
+Return a new `RandomCircle`
+
+    makeRandomCircle = -> new RandomCircle()
+
+And some convenience methods
+
     getR = R.prop 'r'
     getX = R.prop 'cx'
     getY = R.prop 'cy'
-
-    makeRandomCircle = ->
-        x = randomWithin width
-        y = randomWithin height
-        r = randomWithin padding
-        new Circle x, y, r
 
 Scales
 ------
