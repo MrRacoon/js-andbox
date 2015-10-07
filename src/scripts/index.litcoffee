@@ -36,8 +36,11 @@ Implement the random circle class. All value will be randomized using internal
 bounds
 
     class RandomCircle extends Circle
-        constructor: (@x = width, @y = height, @r = padding) ->
-            R.apply super [randomWithin @x, randomWithin @y, randomWithin @r]
+        constructor: ->
+            x = randomWithin width
+            y = randomWithin height
+            r = randomWithin padding
+            super x, y, r
 
 Return a new `RandomCircle`
 
@@ -78,7 +81,6 @@ Data Generation
         f = R.compose (R.sortBy getR), (R.map makeRandomCircle), (R.range 0)
         f count
 
-
 Binding
 -------
 
@@ -88,26 +90,49 @@ Binding
     circs = target.selectAll 'circle'
         .data []
 
-    moveIntoPosition = (trans) ->
-        trans.attr
-            'cy'   : yScaleCirc
-            'cx'   : xScaleCirc
-            'r'    : getR
-            'fill' : fillScale
-
-    initialState = (trans) ->
-        trans.attr
-            'cy' : center.y
-            'cx' : center.x
-            'r'  : 0
+    setId = (t) ->
+        t.attr
             'id' : (d, i) -> i
 
+    initialPosition = (t) ->
+        t.attr
+            'cy' : center.y
+            'cx' : center.x
+
+    initialRadius = (t) ->
+        t.attr
+            'r'  : 0
+
+    setPosition = (t) ->
+        t.attr
+            'cy'   : yScaleCirc
+            'cx'   : xScaleCirc
+
+    setRadius = (t) ->
+        t.attr
+            'r'    : getR
+
+    setFill = (t) ->
+        t.attr
+            'fill' : fillScale
 
     setSpeed = (trans) ->
         trans
             .duration 2000
             .delay    (d) -> d.r * 200 + 1000
             .ease     'bounce'
+
+    moveIntoPosition = (trans) ->
+        trans
+            .call(setPosition)
+            .call(setRadius)
+            .call(setFill)
+
+    initialState = (trans) ->
+        trans
+            .call(initialPosition)
+            .call(initialRadius)
+            .call(setId)
 
 Procedure
 ---------
@@ -122,7 +147,6 @@ data. Otherwise, create 30 circles and pass them to data.
         circs = circs.data d
 
 ### Enter
-
 Create the svg `<circle>` and insert it to the initial position.
 
         circs.enter()
@@ -130,7 +154,6 @@ Create the svg `<circle>` and insert it to the initial position.
             .call initialState
 
 ### Update
-
 On update, move it to the position specified by the circle's data.
 
         circs
@@ -139,7 +162,6 @@ On update, move it to the position specified by the circle's data.
             .call moveIntoPosition
 
 ### Exit
-
 On Exit, move it back to the initil position and remove it from the dom.
 
         circs.exit()
@@ -148,9 +170,10 @@ On Exit, move it back to the initil position and remove it from the dom.
             .call initialState
             .remove()
 
+### Loop
 Set a timeout to loop
 
-        setTimeout go, dur, {r: padding}
+        setTimeout go, 5000, {r: padding}
 
 Begin Looping
 -------------
