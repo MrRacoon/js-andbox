@@ -148,7 +148,7 @@ On Exit, move it back to the initil position and remove it from the dom.
             .call initialState
             .remove()
 
-
+Set a timeout to loop
 
         setTimeout go, dur, {r: padding}
 
