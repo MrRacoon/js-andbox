@@ -16,13 +16,8 @@ Create the svg object, this will serve as our container for svg objects
     target = d3.select '#target'
         .append 'svg'
         .attr
-            width:  width + padding*2,
-            height: height + padding*2
-
-Create the container for the gradient declarations
-
-    defs = target.append 'defs'
-
+            width:  width  + padding * 2,
+            height: height + padding * 2
 
 Shapes
 ------
@@ -41,11 +36,8 @@ Implement the random circle class. All value will be randomized using internal
 bounds
 
     class RandomCircle extends Circle
-        constructor: ->
-            x = randomWithin width
-            y = randomWithin height
-            r = randomWithin padding
-            super x, y, r
+        constructor: (@x = width, @y = height, @r = padding) ->
+            R.apply super [randomWithin @x, randomWithin @y, randomWithin @r]
 
 Return a new `RandomCircle`
 
@@ -78,106 +70,89 @@ Scales
     xScaleCirc       = R.compose xScale,       getX
     yScaleCirc       = R.compose yScale,       getY
     fillScaleCirc    = R.compose fillScale,    getR
-    topFillScaleCirc = R.compose topFillScale, getR
-    botFillScaleCirc = R.compose botFillScale, getR
 
 Data Generation
 ---------------
 
     makeData = (count = Math.round (Math.random() * 30)) ->
-        console.log "Hell0! #{count}"
         f = R.compose (R.sortBy getR), (R.map makeRandomCircle), (R.range 0)
-        a = f count
-        console.log "Hell0! #{a}"
-        a
+        f count
 
 
 Binding
 -------
 
+    dur    = 2000
+    del    = (d) -> d.r * 200 + 1000
+
     circs = target.selectAll 'circle'
         .data []
 
-    grads = target.append 'defs'
-        .selectAll 'radialGradient'
-        .data []
+    moveIntoPosition = (trans) ->
+        trans.attr
+            'cy'   : yScaleCirc
+            'cx'   : xScaleCirc
+            'r'    : getR
+            'fill' : fillScale
+
+    initialState = (trans) ->
+        trans.attr
+            'cy' : center.y
+            'cx' : center.x
+            'r'  : 0
+            'id' : (d, i) -> i
+
+
+    setSpeed = (trans) ->
+        trans
+            .duration 2000
+            .delay    (d) -> d.r * 200 + 1000
+            .ease     'bounce'
 
 Procedure
 ---------
 
     go = () ->
 
-        del = (d) -> d.r * 100
-        dur = (d) -> d.r * 200 + 1000
+Create the data. If there was data previously, then pass the empty list into
+data. Otherwise, create 30 circles and pass them to data.
 
         d = if R.isEmpty circs.data() then makeData 30 else makeData 0
 
         circs = circs.data d
-        grads = grads.data d
+
+### Enter
+
+Create the svg `<circle>` and insert it to the initial position.
 
         circs.enter()
             .append 'circle'
-            .attr
-                'cy': center.y
-                'cx': center.x
-                'r' : 0
-                'id': (d, i) -> i
+            .call initialState
 
-        circs.transition()
-            .duration dur
-            .delay    del
-            .ease     'elastic'
-            .attr
-                'cy'   : yScaleCirc
-                'cx'   : xScaleCirc
-                'r'    : getR
-                'fill' : (d, i) -> "url(#grad#{i})"
+### Update
+
+On update, move it to the position specified by the circle's data.
+
+        circs
+            .transition()
+            .call setSpeed
+            .call moveIntoPosition
+
+### Exit
+
+On Exit, move it back to the initil position and remove it from the dom.
 
         circs.exit()
             .transition()
-            .duration dur
-            .delay    del
-            .ease     'cubic'
-            .attr
-                'cy' : center.y
-                'cx' : center.x
-                'r'  : 0
+            .call setSpeed
+            .call initialState
             .remove()
 
-        grads.enter()
-            .append 'radialGradient'
-            .attr
-                'gradientUnits': 'objectBoundingBox'
-                'cx' : 0
-                'cy' : 0
-                'r'  : '100%'
-                'id' : (d, i) -> 'grad' + i
-
-        grads.append('stop')
-            .transition()
-            .duration dur
-            .delay    del
-            .ease     'elastic'
-            .attr
-                'class': 'x'
-                'offset': '0%'
-            .style
-                'stop-color': topFillScaleCirc
-
-        grads.append('stop')
-            .transition()
-            .duration dur
-            .delay del
-            .attr
-                'class': 'y'
-                'offset': '100%'
-            .style
-                'stop-color': botFillScaleCirc
-
-        setTimeout go, 2000
 
 
-Perform
--------
+        setTimeout go, dur, {r: padding}
+
+Begin Looping
+-------------
 
     go()
