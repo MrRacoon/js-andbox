@@ -36,11 +36,11 @@ Implement the random circle class. All value will be randomized using internal
 bounds
 
     class RandomCircle extends Circle
-        constructor: ->
-            x = randomWithin width
-            y = randomWithin height
-            r = randomWithin padding
-            super x, y, r
+        constructor: (@x = width, @y = height, @r = padding)->
+            @x = randomWithin @x
+            @y = randomWithin @y
+            @r = randomWithin @r
+            super @x, @y, @r
 
 Return a new `RandomCircle`
 
@@ -90,6 +90,8 @@ Binding
     circs = target.selectAll 'circle'
         .data []
 
+#### Initial State
+
     setId = (t) ->
         t.attr
             'id' : (d, i) -> i
@@ -102,6 +104,20 @@ Binding
     initialRadius = (t) ->
         t.attr
             'r'  : 0
+
+    initialState = (trans) ->
+        trans
+            .call(setId)
+            .call(initialPosition)
+            .call(initialRadius)
+
+#### Final State
+
+    setSpeed = (trans) ->
+        trans
+            .duration 2000
+            .delay    (d) -> d.r * 200 + 1000
+            .ease     'bounce'
 
     setPosition = (t) ->
         t.attr
@@ -116,23 +132,12 @@ Binding
         t.attr
             'fill' : fillScale
 
-    setSpeed = (trans) ->
-        trans
-            .duration 2000
-            .delay    (d) -> d.r * 200 + 1000
-            .ease     'bounce'
-
     moveIntoPosition = (trans) ->
         trans
+            .call(setSpeed)
             .call(setPosition)
             .call(setRadius)
             .call(setFill)
-
-    initialState = (trans) ->
-        trans
-            .call(initialPosition)
-            .call(initialRadius)
-            .call(setId)
 
 Procedure
 ---------
@@ -158,7 +163,6 @@ On update, move it to the position specified by the circle's data.
 
         circs
             .transition()
-            .call setSpeed
             .call moveIntoPosition
 
 ### Exit
